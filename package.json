@@ -1,0 +1,32 @@
+{
+  "name": "n8n-nodes-contactformoutreach",
+  "version": "1.0.0",
+  "description": "Contact Form Outreach for n8n: opt-out-aware B2B outreach through company website contact forms, with paid sends.",
+  "author": { "name": "Contact Form Outreach" },
+  "keywords": ["n8n-community-node-package", "outreach", "contact form", "b2b"],
+  "license": "MIT",
+  "repository": { "type": "git", "url": "git+https://github.com/Contact-Form-Outreach/n8n-nodes-contactformoutreach.git" },
+  "homepage": "https://contactformoutreach.com",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc && node scripts/copy-icons.mjs",
+    "test": "npm run build && node --test test/node.node-test.mjs"
+  },
+  "files": ["dist"],
+  "n8n": {
+    "n8nNodesApiVersion": 1,
+    "credentials": ["dist/credentials/ContactFormOutreachApi.credentials.js"],
+    "nodes": [
+      "dist/nodes/ContactFormOutreach/ContactFormOutreach.node.js",
+      "dist/nodes/ContactFormOutreach/ContactFormOutreachTrigger.node.js"
+    ]
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "n8n-workflow": "^1.82.0",
+    "typescript": "^5.5.0"
+  },
+  "peerDependencies": {
+    "n8n-workflow": "*"
+  }
+}
