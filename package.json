@@ -1,6 +1,6 @@
 {
   "name": "n8n-nodes-contactformoutreach",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Contact Form Outreach for n8n: opt-out-aware B2B outreach through company website contact forms, with paid sends.",
   "author": { "name": "Contact Form Outreach", "email": "hello@contactformoutreach.com" },
   "keywords": ["n8n-community-node-package", "outreach", "contact form", "b2b"],

@@ -11,9 +11,9 @@ import type {
 } from 'n8n-workflow';
 import { NodeApiError } from 'n8n-workflow';
 
-export const BASE = 'https://api.cadgentic.com/v1/cfs';
+export const BASE = 'https://api.contactformoutreach.com/v1';
 // The company register lives on the same host, under its own root.
-export const REGISTRY = 'https://api.cadgentic.com/v1/registries';
+export const REGISTRY = 'https://api.contactformoutreach.com/v1/registries';
 export const CREDENTIAL = 'contactFormOutreachApi';
 
 type Caller = IExecuteFunctions | IHookFunctions | ILoadOptionsFunctions;

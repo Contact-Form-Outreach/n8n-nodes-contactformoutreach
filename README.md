@@ -41,7 +41,7 @@ Action node, "Contact Form Outreach". Pick a resource, then an operation:
 4. Copy the key. It is shown once.
 5. In n8n, add a "Contact Form Outreach API" credential and paste the key.
 
-API reference: https://api.cadgentic.com/docs
+API reference: https://contactformoutreach.com/developers
 
 ## Example workflow
 

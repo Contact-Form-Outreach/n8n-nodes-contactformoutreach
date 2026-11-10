@@ -7,7 +7,7 @@ export class ContactFormOutreachApi implements ICredentialType {
 
 	icon: Icon = 'file:../nodes/ContactFormOutreach/contactformoutreach.svg';
 
-	documentationUrl = 'https://api.cadgentic.com/docs';
+	documentationUrl = 'https://contactformoutreach.com/developers';
 
 	properties: INodeProperties[] = [
 		{
@@ -28,6 +28,6 @@ export class ContactFormOutreachApi implements ICredentialType {
 	};
 
 	test: ICredentialTestRequest = {
-		request: { baseURL: 'https://api.cadgentic.com/v1/cfs', url: '/me' },
+		request: { baseURL: 'https://api.contactformoutreach.com/v1', url: '/me' },
 	};
 }
