@@ -8,8 +8,9 @@ import type {
 	INodePropertyOptions,
 	INodeType,
 	INodeTypeDescription,
+	JsonObject,
 } from 'n8n-workflow';
-import { NodeApiError, NodeOperationError } from 'n8n-workflow';
+import { NodeApiError, NodeConnectionTypes, NodeOperationError } from 'n8n-workflow';
 import { call, CREDENTIAL, REGISTRY, statusOf } from './api';
 
 const text = (v: unknown): string => (typeof v === 'string' ? v.trim() : v === undefined || v === null ? '' : String(v));
@@ -143,7 +144,7 @@ export const operations: Record<string, (ctx: IExecuteFunctions, i: number) => P
 	// One page of the company register. Each company returned is paid for, so the limit is the most it can cost.
 	async searchRegister(ctx, i) {
 		const country = (text(ctx.getNodeParameter('registerCountry', i, 'PL')) || 'PL').toUpperCase();
-		const qs: IDataObject = { limit: Math.min(100, Math.max(1, Number(ctx.getNodeParameter('limit', i, 20)) || 20)) };
+		const qs: IDataObject = { limit: Math.min(100, Math.max(1, Number(ctx.getNodeParameter('limit', i, 50)) || 50)) };
 		const trade = text(ctx.getNodeParameter('trade', i, ''));
 		const place = text(ctx.getNodeParameter('place', i, ''));
 		const q = text(ctx.getNodeParameter('nameContains', i, ''));
@@ -186,30 +187,75 @@ export class ContactFormOutreach implements INodeType {
 		icon: 'file:contactformoutreach.svg',
 		group: ['output'],
 		version: 1,
-		subtitle: '={{$parameter["operation"]}}',
+		subtitle: '={{$parameter["operation"] + ": " + $parameter["resource"]}}',
 		description: 'Send a business message to companies through their website contact forms',
 		defaults: { name: 'Contact Form Outreach' },
-		inputs: ['main'],
-		outputs: ['main'],
+		usableAsTool: true,
+		inputs: [NodeConnectionTypes.Main],
+		outputs: [NodeConnectionTypes.Main],
 		credentials: [{ name: CREDENTIAL, required: true }],
 		properties: [
+			{
+				displayName: 'Resource',
+				name: 'resource',
+				type: 'options',
+				noDataExpression: true,
+				default: 'campaign',
+				options: [
+					{ name: 'Campaign', value: 'campaign' },
+					{ name: 'Company', value: 'company' },
+					{ name: 'Company Register', value: 'register' },
+					{ name: 'Message', value: 'message' },
+				],
+			},
 			{
 				displayName: 'Operation',
 				name: 'operation',
 				type: 'options',
 				noDataExpression: true,
+				displayOptions: { show: { resource: ['campaign'] } },
+				default: 'createCampaign',
+				options: [
+					{ name: 'Create', value: 'createCampaign', action: 'Create a campaign', description: 'Starts an empty campaign for your own list of companies. Nothing is sent until you use Send Campaign.' },
+					{ name: 'Find', value: 'findCampaign', action: 'Find a campaign', description: 'Finds a campaign by its name' },
+					{ name: 'Send', value: 'sendCampaign', action: 'Send a campaign', description: 'Sends the message to every company on the campaign that has a contact form. You pay only for messages that are sent.' },
+					{ name: 'Stop', value: 'stopCampaign', action: 'Stop a campaign', description: 'Stops a campaign. A message already on its way may still arrive.' },
+				],
+			},
+			{
+				displayName: 'Operation',
+				name: 'operation',
+				type: 'options',
+				noDataExpression: true,
+				displayOptions: { show: { resource: ['company'] } },
 				default: 'addCompany',
 				options: [
 					{ name: 'Add Companies to Campaign', value: 'addCompanies', action: 'Add companies to a campaign', description: 'Adds up to 50 company websites to a campaign in one step. Each company comes back with whether it was added, and why not if it was not.' },
 					{ name: 'Add Company to Campaign', value: 'addCompany', action: 'Add a company to a campaign', description: 'Adds one company website to a campaign. Its contact form is looked for right away.' },
-					{ name: 'Create Campaign', value: 'createCampaign', action: 'Create a campaign', description: 'Starts an empty campaign for your own list of companies. Nothing is sent until you use Send Campaign.' },
-					{ name: 'Create Message', value: 'createMessage', action: 'Create a message', description: 'Writes the message that is sent to companies, with who it is from' },
-					{ name: 'Find Campaign', value: 'findCampaign', action: 'Find a campaign', description: 'Finds a campaign by its name' },
 					{ name: 'Find Company on Campaign', value: 'findCompany', action: 'Find a company on a campaign', description: 'Finds a company on a campaign by its website, with what happened to it' },
+				],
+			},
+			{
+				displayName: 'Operation',
+				name: 'operation',
+				type: 'options',
+				noDataExpression: true,
+				displayOptions: { show: { resource: ['register'] } },
+				default: 'searchRegister',
+				options: [
 					{ name: 'Find Company Website', value: 'findWebsite', action: 'Find the website of a register company', description: 'Finds the website of one company from the company register. A website that is found has its own price, charged once. The API key needs the registry website permission. If the search is still running, the state is queued or working: run the step again later.' },
 					{ name: 'Search Company Register', value: 'searchRegister', action: 'Search the company register', description: 'Finds companies in the official company register by trade, place and name. Each company returned has its own price.' },
-					{ name: 'Send Campaign', value: 'sendCampaign', action: 'Send a campaign', description: 'Sends the message to every company on the campaign that has a contact form. You pay only for messages that are sent.' },
-					{ name: 'Stop Campaign', value: 'stopCampaign', action: 'Stop a campaign', description: 'Stops a campaign. A message already on its way may still arrive.' },
+				],
+			},
+			{
+				displayName: 'Operation',
+				name: 'operation',
+				type: 'options',
+				noDataExpression: true,
+				displayOptions: { show: { resource: ['message'] } },
+				default: 'createMessage',
+				options: [
+					{ name: 'Create', value: 'createMessage', action: 'Create a message', description: 'Writes the message that is sent to companies, with who it is from' },
 				],
 			},
 			{
@@ -260,7 +306,7 @@ export class ContactFormOutreach implements INodeType {
 				displayOptions: forOps('searchRegister'),
 			},
 			{ displayName: 'Only Companies New to You', name: 'newOnly', type: 'boolean', default: false, description: 'Whether to leave out companies you were already given', displayOptions: forOps('searchRegister') },
-			{ displayName: 'Limit', name: 'limit', type: 'number', typeOptions: { minValue: 1, maxValue: 100 }, default: 20, description: 'Max number of results to return', displayOptions: forOps('searchRegister') },
+			{ displayName: 'Limit', name: 'limit', type: 'number', typeOptions: { minValue: 1, maxValue: 100 }, default: 50, description: 'Max number of results to return', displayOptions: forOps('searchRegister') },
 			{ displayName: 'Continue After', name: 'after', type: 'string', default: '', description: 'To get the next page, put the Next After value of the page before. Leave empty for the first page.', displayOptions: forOps('searchRegister') },
 			{ displayName: 'Register ID', name: 'registerId', type: 'string', default: '', required: true, description: 'The Register ID of the company, as Search Company Register gives it', displayOptions: forOps('findWebsite') },
 			{ displayName: 'Name', name: 'name', type: 'string', default: '', required: true, displayOptions: forOps('createMessage', 'createCampaign', 'findCampaign') },
@@ -323,7 +369,10 @@ export class ContactFormOutreach implements INodeType {
 				if (!run) throw new NodeOperationError(this.getNode(), 'This operation is not known.', { itemIndex: i });
 				for (const json of await run(this, i)) out.push({ json, pairedItem: { item: i } });
 			} catch (e) {
-				if (!this.continueOnFail()) throw e;
+				if (!this.continueOnFail()) {
+					if (e instanceof NodeApiError) throw new NodeApiError(this.getNode(), e as unknown as JsonObject, { itemIndex: i });
+					throw new NodeOperationError(this.getNode(), e as Error, { itemIndex: i });
+				}
 				out.push({ json: { error: (e as Error).message }, pairedItem: { item: i } });
 			}
 		}

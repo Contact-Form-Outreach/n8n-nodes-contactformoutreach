@@ -9,7 +9,9 @@ import type {
 	INodeTypeDescription,
 	IWebhookFunctions,
 	IWebhookResponseData,
+	JsonObject,
 } from 'n8n-workflow';
+import { NodeApiError, NodeConnectionTypes } from 'n8n-workflow';
 import { call, CREDENTIAL, flatEvent, signedBy, statusOf } from './api';
 
 export const EVENTS: Record<string, string[]> = {
@@ -53,7 +55,7 @@ export class ContactFormOutreachTrigger implements INodeType {
 		description: 'Starts the workflow when a message is sent, a company cannot be reached or a campaign finishes',
 		defaults: { name: 'Contact Form Outreach Trigger' },
 		inputs: [],
-		outputs: ['main'],
+		outputs: [NodeConnectionTypes.Main],
 		credentials: [{ name: CREDENTIAL, required: true }],
 		webhooks: [{ name: 'default', httpMethod: 'POST', responseMode: 'onReceived', path: 'webhook' }],
 		properties: [
@@ -108,7 +110,7 @@ export class ContactFormOutreachTrigger implements INodeType {
 					const same = ep.url === this.getNodeWebhookUrl('default') && want.every((t) => have.includes(t)) && have.length === want.length;
 					if (same) return true;
 				} catch (err) {
-					if (![404, 410].includes(statusOf(err) ?? 0)) throw err;
+					if (![404, 410].includes(statusOf(err) ?? 0)) throw new NodeApiError(this.getNode(), err as JsonObject);
 					delete data.endpointId;
 					delete data.secret;
 					return false;
@@ -117,7 +119,7 @@ export class ContactFormOutreachTrigger implements INodeType {
 				try {
 					await call(this, 'DELETE', `/webhook-endpoints/${data.endpointId}`);
 				} catch (err) {
-					if (![404, 410].includes(statusOf(err) ?? 0)) throw err;
+					if (![404, 410].includes(statusOf(err) ?? 0)) throw new NodeApiError(this.getNode(), err as JsonObject);
 				}
 				delete data.endpointId;
 				delete data.secret;

@@ -13,18 +13,15 @@ Trigger node, "Contact Form Outreach Trigger":
 
 Each can be narrowed to one campaign.
 
-Action node, "Contact Form Outreach":
+Action node, "Contact Form Outreach". Pick a resource, then an operation:
 
-- Create Message
-- Create Campaign
-- Add Company to Campaign
-- Send Campaign
-- Stop Campaign
-- Find Campaign
-- Find Company on Campaign
+- Campaign: Create, Find, Send, Stop
+- Company: Add Company to Campaign, Add Companies to Campaign, Find Company on Campaign
+- Message: Create
+- Company Register: Search Company Register, Find Company Website
 
 - Add Companies to Campaign: up to 50 websites in one step. Each comes back with added or not, and why not.
-- Search Company Register: by trade, place and name. Each company returned has its own price.
+- Search Company Register: by trade, place and name. Each company returned has its own price. It returns 50 companies unless you set a lower limit.
 - Find Company Website: the website of one register company. A website found has its own price, once. The key needs the registry website permission. The step does not wait: if the search is still running, it returns the state queued or working; run it again later.
 - The register country is a dropdown read from the API.
 
@@ -34,7 +31,7 @@ Action node, "Contact Form Outreach":
 - Every write carries its own Idempotency-Key.
 - Turning a workflow on adds one webhook endpoint. Turning it off removes it.
 - The endpoint's signing secret is kept in the workflow's own data. A post that is not signed with it gets 401 and starts nothing.
-- Send Campaign signs the statement the API shows, and only when "I Confirm" is on.
+- Campaign, Send signs the statement the API shows, and only when "I Confirm" is on.
 
 ## Make an API key
 
@@ -51,10 +48,10 @@ API reference: https://api.cadgentic.com/docs
 Add companies from a sheet to a campaign and get told when each message is sent.
 
 1. Workflow 1: a sheet trigger (new row) with a `website` column.
-2. Contact Form Outreach, Add Company to Campaign: pick the campaign, set Website to `{{$json.website}}`.
+2. Contact Form Outreach, Company, Add Company to Campaign: pick the campaign, set Website to `{{$json.website}}`.
 3. Workflow 2: Contact Form Outreach Trigger, event Message Sent, narrowed to the same campaign.
 4. A notification node that posts the company website and `sent_at` from the event.
-5. When the list is ready, run Contact Form Outreach, Send Campaign once with "I Confirm" on.
+5. When the list is ready, run Contact Form Outreach, Campaign, Send once with "I Confirm" on.
 
 If the API answers 429 (too many requests), the step stops with a clear message. Wait a minute and run it again.
 

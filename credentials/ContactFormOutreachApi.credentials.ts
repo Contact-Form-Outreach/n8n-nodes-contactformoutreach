@@ -1,9 +1,11 @@
-import type { IAuthenticateGeneric, ICredentialTestRequest, ICredentialType, INodeProperties } from 'n8n-workflow';
+import type { IAuthenticateGeneric, ICredentialTestRequest, ICredentialType, Icon, INodeProperties } from 'n8n-workflow';
 
 export class ContactFormOutreachApi implements ICredentialType {
 	name = 'contactFormOutreachApi';
 
 	displayName = 'Contact Form Outreach API';
+
+	icon: Icon = 'file:../nodes/ContactFormOutreach/contactformoutreach.svg';
 
 	documentationUrl = 'https://api.cadgentic.com/docs';
 
